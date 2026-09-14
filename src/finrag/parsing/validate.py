@@ -67,12 +67,19 @@ def score_page(text: str) -> dict:
 
 
 def judge_page(m: dict, *, has_image: bool, skip_space: bool = False) -> tuple[str, list[str]]:
-    # ── TODO: 여기를 채우세요 ──────────────────────────────
-    # 페이지 하나를 보고 pass / reparse / ocr 을 정한다.
-    # - 글자가 거의 없다면: 이미지 객체가 있으면 OCR, 없으면 그냥 빈 페이지다(통과).
-    # - 글자는 있는데 한글 비율·깨진문자 비율·공백 비율·단음절 비율이 나쁘면 reparse.
-    # 임계값 상수는 위에 있다. 왜 그 값인지는 실제 문서로 확인하고 기록한다.
-    raise NotImplementedError("TODO: judge_page 를 구현하세요")
+    reasons: list[str] = []
+    if m["chars"] < MIN_CHARS_PER_PAGE:
+        # 이미지가 있으면 스캔본이라 OCR 로, 없으면 그냥 빈 페이지라 통과시킨다.
+        return ("ocr", ["텍스트 없음, 이미지 있음"]) if has_image else ("pass", ["빈 페이지"])
+    if m["hangul_ratio"] < MIN_HANGUL_RATIO:
+        reasons.append(f"한글 비율 {m['hangul_ratio']:.3f} < {MIN_HANGUL_RATIO}")
+    if m["broken_ratio"] > MAX_BROKEN_RATIO:
+        reasons.append(f"깨진 문자 비율 {m['broken_ratio']:.3f} > {MAX_BROKEN_RATIO}")
+    if not skip_space and m["space_ratio"] < MIN_SPACE_RATIO:
+        reasons.append(f"공백 비율 {m['space_ratio']:.3f} < {MIN_SPACE_RATIO}")
+    if m["single_char_token_ratio"] > MAX_SINGLE_CHAR_TOKEN_RATIO:
+        reasons.append(f"단음절 토큰 비율 {m['single_char_token_ratio']:.3f} > {MAX_SINGLE_CHAR_TOKEN_RATIO}")
+    return ("reparse" if reasons else "pass"), reasons
 
 
 def validate(extraction, page_objs: list[dict] | None = None) -> DocReport:

@@ -42,10 +42,10 @@ ARTICLE_HEAD = re.compile(r"^\s*제\s*(\d+)\s*조(?:\s*의\s*(\d+))?\s*[［\[(�
 
 def normalize_article(raw: str) -> str | None:
     """'제 31 조' → '제31조', '제4조의2' → '제4조의2'."""
-    # ── TODO: 여기를 채우세요 ──────────────────────────────
-    # "제31 조", "제 7 조", "제4조의2" 가 모두 다른 문자열이면 BM25 에서 다른 토큰이 된다.
-    # 하나의 정규형으로 모은다. ARTICLE_PAT 을 쓴다.
-    raise NotImplementedError("TODO: normalize_article 를 구현하세요")
+    m = ARTICLE_PAT.search(raw)
+    if not m:
+        return None
+    return f"제{int(m.group(1))}조" + (f"의{int(m.group(2))}" if m.group(2) else "")
 
 
 def expand_query_terms(q: str) -> list[str]:

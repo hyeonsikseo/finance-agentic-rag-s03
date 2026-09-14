@@ -46,26 +46,24 @@ def _clean(line: str) -> str:
 
 
 def split_articles(pages: list[str]) -> list[dict]:
-    """조항 머리글을 만나면 새 구간을 연다. 조항이 없는 문서는 통째로 한 구간.
-
-    블록 하나는 {"article", "title", "lines", "page_start", "page_end"} 다.
-    첫 조항 머리글 앞의 본문은 article 이 "" 인 블록이 된다.
-    """
+    """조항 머리글을 만나면 새 구간을 연다. 조항이 없는 문서는 통째로 한 구간."""
     blocks: list[dict] = []
     cur = {"article": "", "title": "", "lines": [], "page_start": 1, "page_end": 1}
     for pno, page in enumerate(pages, start=1):
         for line in page.splitlines():
-            line = _clean(line)          # 쪽 번호 표시("- 2 -")는 빈 줄이 된다
+            line = _clean(line)
             if not line.strip():
                 continue
             m = ARTICLE_HEAD.match(line)
-            # ── TODO: 여기를 채우세요 ──────────────────────────────
-            # m 이 있으면 조항 머리글이다. 지금까지 모은 cur 를 blocks 에 넣고(줄이 있을 때만)
-            # 새 cur 를 연다 — article 은 normalize_article(m.group(0)) (None 이면 ""),
-            # title 은 m.group(3) 의 양끝 공백을 지운 것, lines 는 [line], page_start 와 page_end 는 pno.
-            # m 이 없으면 cur["lines"] 에 line 을 붙이고 cur["page_end"] 를 pno 로 갱신한다.
-            # page_start / page_end 가 있어야 나중에 근거로 쪽수를 인용할 수 있다.
-            raise NotImplementedError("TODO: split_articles 를 구현하세요")
+            if m:
+                if cur["lines"]:
+                    blocks.append(cur)
+                art = normalize_article(m.group(0)) or ""
+                cur = {"article": art, "title": (m.group(3) or "").strip(),
+                       "lines": [line], "page_start": pno, "page_end": pno}
+            else:
+                cur["lines"].append(line)
+                cur["page_end"] = pno
     if cur["lines"]:
         blocks.append(cur)
     return blocks
