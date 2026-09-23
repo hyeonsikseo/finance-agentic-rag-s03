@@ -12,3 +12,9 @@ data/download_report.json
 # 문서 본문이 들어 있어 같은 이유로 넣지 않습니다
 data/chunks/
 data/ocr_cache/
+data/repair_cache/
+
+# 3회차. 크거나 각자 만드는 것
+models/
+data/embeddings/
+data/qdrant_local/

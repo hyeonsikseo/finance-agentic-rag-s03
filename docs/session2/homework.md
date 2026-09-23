@@ -12,7 +12,7 @@ make chunk       # 문서 51건 → data/chunks/chunks.jsonl. 4~5분
 make check-s02   # 5/6. 마지막 항목은 필수 2 입니다
 ```
 
-수업에서 못 채운 함수가 있으면 강사가 수업 뒤 올리는 **정답 브랜치**를 봅니다. 브라우저에서 이 주소를 열면 세 파일이 있습니다.
+수업에서 못 채운 함수가 있으면 강사가 수업 뒤 올리는 **solution 브랜치**를 봅니다. 브라우저에서 이 URL 을 열면 세 파일이 있습니다.
 
 https://github.com/hyeonsikseo/finance-agentic-rag-s02/tree/solution/src/finrag/parsing
 
@@ -45,7 +45,7 @@ https://github.com/hyeonsikseo/finance-agentic-rag-s02/tree/solution/src/finrag/
 ## 제출
 
 1. `make check-s02` 가 6/6 인지 봅니다.
-2. 커밋하고 자기 fork 에 올립니다.
+2. 커밋하고 자기 포크에 올립니다.
 
 ```bash
 git add src/finrag/parsing/ data/golden/student_q.jsonl results/check_s02.json docs/feedback_memo.md
@@ -55,9 +55,9 @@ git push
 
 (`docs/feedback_memo.md` 가 없으면 그 부분은 빼고 add 합니다.)
 
-3. 자기 fork 주소(`https://github.com/<계정>/finance-agentic-rag-s02`)를 디스코드에 올립니다.
+3. 자기 포크 URL(`https://github.com/<계정>/finance-agentic-rag-s02`)를 디스코드에 올립니다.
 
-Fork 없이 받았으면 위 파일들(`src/finrag/parsing/` 폴더 포함)을 zip 으로 묶어 디스코드에 올립니다.
+포크 없이 받았으면 위 파일들(`src/finrag/parsing/` 폴더 포함)을 zip 으로 묶어 디스코드에 올립니다.
 
 ## check-s02 가 보는 것
 

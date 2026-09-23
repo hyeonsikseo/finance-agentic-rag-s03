@@ -12,7 +12,7 @@
 **준비**
 
 - 수업 시작 때 `make download` 를 끝냈으면 `data/raw/` 에 파일이 들어 있습니다
-- `data/documents.csv` 와 `data/doc_profile.json` 은 저장소에 들어 있습니다. 문서를 못 받았어도 A 와 B 는 풀 수 있습니다
+- `data/documents.csv` 와 `data/doc_profile.json` 은 레포지토리에 들어 있습니다. 문서를 못 받았어도 A 와 B 는 풀 수 있습니다
 
 ---
 
@@ -20,7 +20,7 @@
 
 | 순서 | 파일 | 무엇 | 여는 법 |
 |---|---|---|---|
-| 1 | `data/README.md` | 왜 원본 문서가 저장소에 없는지 | 첫 절만 읽습니다 (2분) |
+| 1 | `data/README.md` | 왜 원본 문서가 레포지토리에 없는지 | 첫 절만 읽습니다 (2분) |
 | 2 | `data/documents.csv` | 문서 51건의 카탈로그. 오늘의 지도입니다 | VS Code 로 열면 검색이 됩니다. 표로 보려면 Numbers 나 Excel 에서 UTF-8 로 가져옵니다 |
 | 3 | `data/raw/`, `data/bundled/` | 실물 PDF | 아래 9개를 PDF 뷰어로 엽니다 |
 | 4 | `data/doc_profile.json` | 문서마다 파서별로 글자가 몇 자 나왔는지 | VS Code 에서 doc_id 로 검색합니다 |
@@ -62,7 +62,7 @@
 **A1.** 문서는 모두 몇 건이고, 형식(`format`)은 몇 가지입니까. PDF 가 아닌 것은 몇 건입니까.
 어디서: documents.csv
 
-**A2.** 저장소 안에 실제로 들어 있는 원본은 어느 폴더의 어떤 문서뿐입니까. 나머지는 왜 없습니까.
+**A2.** 레포지토리 안에 실제로 들어 있는 원본은 어느 폴더의 어떤 문서뿐입니까. 나머지는 왜 없습니까.
 어디서: data/README.md 첫 절, data/bundled/
 
 **A3.** `chars` 가 0 인 행을 모두 찾으세요. 몇 건입니까. 0 인 이유가 전부 같습니까.
@@ -90,7 +90,7 @@
 **C1.** `hana_credit_terms_2009.pdf` 를 열면 눈에는 멀쩡한 약관입니다. documents.csv 의 `quality` 는 무엇입니까. doc_profile.json 에서 이 문서의 pypdf 와 pymupdf 가 읽은 한글(`hangul`) 수를 각각 적으세요.
 어디서: doc_profile.json 에서 `hana_credit_terms_2009` 검색 → `extractors`
 
-**C2.** `law_silson_std.pdf` 는 492쪽입니다. doc_profile.json 에서 이 문서의 `broken_page` 와 `empty_pages` 를 찾으세요. 나쁜 쪽은 몇 쪽입니까. 이 문서를 색인에서 빼야 합니까.
+**C2.** `law_silson_std.pdf` 는 492쪽입니다. doc_profile.json 에서 이 문서의 `broken_page` 와 `empty_pages` 를 찾으세요. 나쁜 쪽은 몇 쪽입니까. 이 문서를 인덱스에서 빼야 합니까.
 어디서: doc_profile.json 에서 `law_silson_std_pdf` 검색
 
 **C3.** `knia_3500_scan.pdf` 를 열어 본문 글자를 마우스로 드래그해 보세요. 선택이 됩니까. documents.csv 에서 이 문서의 `chars` 와 `quality` 는 무엇입니까.

@@ -112,9 +112,12 @@ def validate(extraction, page_objs: list[dict] | None = None) -> DocReport:
     # 문서 판정은 "이 문서를 통째로 어떻게 할 것인가"이지 "나쁜 페이지가 있는가"가 아니다.
     # 492쪽 중 2쪽이 나쁘다고 490쪽을 버리면 손해가 훨씬 크다. 그래서 쓸 수 있는
     # 페이지가 하나라도 있으면 버리지 않고, 나쁜 페이지만 고치거나 빼고 간다.
+    # 쓸 수 있는 페이지가 하나도 없어도 바로 버리지 않는다. 깨진 페이지라도 있으면
+    # 다른 파서로 고쳐 보고(reparse), 그래도 안 되면 그래프가 LLM 복구로 보낸다.
+    # 글자도 이미지도 없는 문서만 여기서 바로 fail 이다. 고칠 재료가 없기 때문이다.
     if usable == 0 and n_ocr == 0:
-        verdict = "fail"
         reasons.append("쓸 수 있는 페이지가 없음")
+        verdict = "reparse" if n_reparse else "fail"
     elif usable == 0:
         verdict = "ocr"            # 전체가 스캔본. OCR 없이는 아무것도 못 한다.
     elif n_reparse:

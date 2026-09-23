@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """회차 확인.
 
-    python scripts/check_session.py 2        →  results/check_s02.json
+    python scripts/check_session.py 3        →  results/check_s03.json
 
 회차 끝에 이걸 돌려서 나온 JSON 을 커밋합니다. 그 파일이 제출물입니다.
 강사는 그 파일들을 모아 표로 보고 빨간 칸만 확인합니다.
@@ -23,6 +23,21 @@ sys.path.insert(0, str(ROOT / "src"))
 
 def ok(cond: bool, detail: str = "") -> dict:
     return {"ok": bool(cond), "detail": detail}
+
+
+def _json(path: Path) -> dict | None:
+    if not path.exists():
+        return None
+    try:
+        return json.loads(path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return None
+
+
+def _lines(path: Path) -> int:
+    if not path.exists():
+        return 0
+    return sum(1 for l in path.open(encoding="utf-8") if l.strip())
 
 
 CHUNK_ID = re.compile(r"^[^#]+#[^#]*#\d+$")
@@ -85,7 +100,69 @@ def check_s02() -> dict:
     }
 
 
-CHECKS = {2: check_s02}
+def _qdrant_points() -> tuple[int, str]:
+    """포인트 수를 센다.
+
+    임베디드 Qdrant 는 한 프로세스만 붙을 수 있다. API 서버가 떠 있으면 여기서
+    잠금 오류가 난다. 그럴 때는 /health 로 물어본다. "API 를 끄고 다시 하세요"는
+    답이 아니다 — 확인 스크립트는 서버가 떠 있든 아니든 돌아야 한다.
+    """
+    from finrag.index import qdrant
+    try:
+        return qdrant.count(), "직접 조회"
+    except Exception as e:
+        if "already accessed" not in str(e):
+            return 0, f"오류: {type(e).__name__}"
+    try:
+        import urllib.request
+        with urllib.request.urlopen("http://localhost:8000/health", timeout=5) as r:
+            return json.loads(r.read()).get("points", 0), "API /health 경유"
+    except Exception:
+        return 0, "임베디드 잠금 + API 미기동 (API 를 끄거나 켜고 다시 실행)"
+
+
+def check_s03() -> dict:
+    from finrag.settings import get_settings
+    s = get_settings()
+    rep = _json(s.data / "ingest_report.json") or {}
+    res = _json(s.results_dir / "baseline.json") or {}
+    points, how = _qdrant_points()
+
+    routes = rep.get("routes", {})
+    routed = sum(routes.values())
+    verdicts = rep.get("verdicts", {})
+    overall = res.get("overall", {})
+
+    # ADR-002 는 3회차 과제다. 템플릿을 복사만 하고 빈칸(______)을 남겨 두면 안 낸 것이다.
+    adr = s.root / "docs" / "adr" / "ADR-002-ingestion-graph.md"
+    if not adr.exists():
+        adr_ok = ok(False, "docs/adr/ADR-002-ingestion-graph.md 가 없다 (docs/templates/adr.md 를 복사해 채운다)")
+    else:
+        blanks = adr.read_text(encoding="utf-8").count("______")
+        adr_ok = ok(blanks == 0, f"빈칸 {blanks}곳 남음" if blanks else f"{len(adr.read_text(encoding='utf-8')):,}자")
+
+    # 코퍼스 전체를 돌렸는지 본다. 경로 합 = 문서 수만 보면 --only 로 1건만 돌려도
+    # 통과한다(실제로 그렇게 통과했다).
+    corpus = max(_lines(s.data / "documents.csv") - 1, 0)
+    n_doc = rep.get("documents") or 0
+
+    return {
+        "인제스천 전체 처리": ok(routed == n_doc and corpus and n_doc >= corpus * 0.9,
+                          f"문서 {n_doc}/{corpus}건 · 경로 합 {routed}"
+                          + (f" · {routes}" if routes else "")
+                          + ("  → --only 없이 전체를 돌리세요" if 0 < n_doc < corpus * 0.9 else "")),
+        "게이트 3분기 동작": ok(len({v for v in verdicts if verdicts.get(v)}) >= 3,
+                         f"{verdicts}" if verdicts else "판정 기록 없음"),
+        "Qdrant 포인트": ok(points > 0, f"{points:,}개 ({how})"),
+        "baseline Recall@5": ok(overall.get("recall@5") is not None,
+                                f"{overall.get('recall@5')} (MRR {overall.get('mrr')})"),
+        "유형별 분해": ok(len(res.get("by_type", {})) >= 5,
+                     f"{len(res.get('by_type', {}))}개 유형"),
+        "ADR-002": adr_ok,
+    }
+
+
+CHECKS = {2: check_s02, 3: check_s03}
 
 
 def main() -> int:

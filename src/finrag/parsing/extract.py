@@ -12,11 +12,18 @@ import re
 from dataclasses import dataclass, field
 from pathlib import Path
 
+import logging
+
 import pymupdf
 
 # 일부 PDF 는 색상 프로파일이 깨져 있어 MuPDF 가 "cmsOpenProfileFromMem failed" 를
 # stderr 에 찍는다. 글자 추출 결과와는 무관한 경고라 꺼 둔다. 진짜 오류는 예외로 올라온다.
 pymupdf.TOOLS.mupdf_display_errors(False)
+
+# pypdf 는 한글 CID 폰트를 만나면 "Advanced encoding /UniKS-UTF16-H not implemented yet" 을
+# 문서마다 찍는다. 글자를 못 읽는다는 뜻이 아니라 그 인코딩 표를 안 쓴다는 뜻이고, 결과는
+# 검사기가 어차피 잰다. 51건을 돌리면 화면이 이 줄로 덮이므로 꺼 둔다.
+logging.getLogger("pypdf").setLevel(logging.CRITICAL)
 
 # 한국어 금융문서에 나올 수 있는 문자 범위. 이 밖은 폰트 매핑이 깨졌다는 신호다.
 # scripts/profile_docs.py 와 같은 기준을 쓴다(둘이 어긋나면 게이트가 거짓말을 한다).
