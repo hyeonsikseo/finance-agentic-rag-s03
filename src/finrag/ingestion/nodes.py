@@ -82,10 +82,15 @@ def parse(state: IngestState) -> IngestState:
 
 def gate(state: IngestState) -> IngestState:
     """검증 게이트. 여기서 통과 / 재추출 / OCR / 실패가 갈린다."""
-    # ── TODO: 여기를 채우세요 ──────────────────────────────
-    # parse 가 뽑은 페이지를 검증 게이트에 넣고 그 판정을 state["route"] 로 돌려준다.
-    # 지원하지 않는 형식(office/missing)은 게이트를 거치지 않고 바로 fail 이다.
-    raise NotImplementedError("TODO: gate 를 구현하세요")
+    if state["route"] in ("office", "missing"):
+        return {"report": {"doc_id": state["doc_id"], "verdict": "fail",
+                           "reasons": [f"지원하지 않는 형식({state['route']})"],
+                           "parser": state.get("parser", "none"), "pages": [], "bad_pages": []},
+                "route": "fail"}
+    ex = Extraction(state["doc_id"], state.get("parser", ""), state.get("pages", []))
+    objs = page_objects(Path(state["path"])) if state["route"] == "pdf" else []
+    rep: DocReport = validate(ex, objs)
+    return {"report": rep.to_dict(), "route": rep.verdict}
 
 
 def reparse(state: IngestState) -> IngestState:
@@ -143,10 +148,6 @@ def ocr(state: IngestState) -> IngestState:
             "excluded_pages": state.get("excluded_pages", []) + missing}
 
 
-# ── 프롬프트를 채우세요 ──
-# (과제) 깨진 페이지 텍스트를 LLM 에게 주고 복원시킨다. 프롬프트에 반드시 넣을 것:
-# 내용을 추측해 채우지 말 것, 판독 불가는 [판독불가] 로 표시할 것.
-# temperature 0 · 결과 캐시 · llm_repaired 표시는 이미 되어 있다.
 def llm_repair(state: IngestState) -> IngestState:
     """마지막 수단. 다른 파서로 다시 추출해도 쓸 수 있는 페이지가 없는 문서의 본문을 LLM 이 복구할 수 있는지 본다.
 
